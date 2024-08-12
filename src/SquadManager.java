@@ -1,5 +1,7 @@
 import javax.swing.*;
 import javax.swing.border.TitledBorder;
+import javax.swing.event.ListSelectionEvent;
+import javax.swing.event.ListSelectionListener;
 import javax.swing.table.DefaultTableModel;
 import java.awt.*;
 import java.awt.event.ActionEvent;
@@ -35,6 +37,11 @@ public class SquadManager extends JFrame {
                 BorderFactory.createEtchedBorder(), "Sub-17", TitledBorder.CENTER, TitledBorder.TOP
         ));
 
+        titularesTable.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+        reservasTable.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+        underSeventeenTable.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+
+        tableSelectionListener();
 
         JPanel buttonPanel = new JPanel();
         JButton editPlayerBtn = new JButton("Editar Jogador");
@@ -81,6 +88,12 @@ public class SquadManager extends JFrame {
         setSize(1200,800);
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setVisible(true);
+    }
+
+    private void tableSelectionListener() {
+        titularesTable.getSelectionModel().addListSelectionListener(new TableSelectionListener(titularesTable));
+        reservasTable.getSelectionModel().addListSelectionListener(new TableSelectionListener(reservasTable));
+        underSeventeenTable.getSelectionModel().addListSelectionListener(new TableSelectionListener(underSeventeenTable));
     }
 
     private void addPlayerTest() {
@@ -294,6 +307,37 @@ public class SquadManager extends JFrame {
             }
         }
         return count;
+    }
+
+    private class TableSelectionListener implements ListSelectionListener {
+        private JTable currentTable;
+
+        public TableSelectionListener(JTable table) {
+            this.currentTable = table;
+        }
+
+        @Override
+        public void valueChanged(ListSelectionEvent e) {
+            if (e.getValueIsAdjusting()) return;
+
+            ListSelectionModel selectionModel = (ListSelectionModel) e.getSource();
+
+           if (!selectionModel.isSelectionEmpty()) {
+               if (currentTable == titularesTable) {
+                   reservasTable.getSelectionModel().clearSelection();
+                   underSeventeenTable.getSelectionModel().clearSelection();
+               }
+               if (currentTable == reservasTable) {
+                   titularesTable.getSelectionModel().clearSelection();
+                   underSeventeenTable.getSelectionModel().clearSelection();
+               }
+               if (currentTable == underSeventeenTable) {
+                   titularesTable.getSelectionModel().clearSelection();
+                   reservasTable.getSelectionModel().clearSelection();
+               }
+
+           }
+        }
     }
 
     public static void main(String[] args) {
