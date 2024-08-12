@@ -212,35 +212,62 @@ public class SquadManager extends JFrame {
     }
 
     private void deletePlayer() {
-        int selectedRowFirstSquad = titularesTable.getSelectedRow();
-        int selectedRowSecondSquad = reservasTable.getSelectedRow();
-        int selectedRowUndeSeventeenSquad = underSeventeenTable.getSelectedRow();
+        int [] selectedRows = {
+                titularesTable.getSelectedRow(),
+                reservasTable.getSelectedRow(),
+                underSeventeenTable.getSelectedRow()
+        };
 
-        if (selectedRowFirstSquad != -1) {
-            titularesModel.removeRow(selectedRowFirstSquad);
-        } else if (selectedRowSecondSquad != -1) {
-            reservasModel.removeRow(selectedRowSecondSquad);
-        } else if (selectedRowUndeSeventeenSquad != -1) {
-            underSeventeenModel.removeRow(selectedRowUndeSeventeenSquad);
-        } else {
-            JOptionPane.showMessageDialog(null, "Selecione um Jogador para deletar");
+        JTable selectedTable = getSelectedTable(selectedRows, titularesTable, reservasTable, underSeventeenTable);
+        if (selectedTable != null) {
+            DefaultTableModel selectedTableModel = getTableModel(selectedTable);
+            if (selectedTableModel != null) {
+                selectedTableModel.removeRow(selectedTable.getSelectedRow());
+            } else {
+                JOptionPane.showMessageDialog(null, "Selecione um Jogador para deletar");
+            }
         }
     }
 
     private void editPlayer() {
-        int selectedRowFirstSquad = titularesTable.getSelectedRow();
-        int selectedRowSecondSquad = reservasTable.getSelectedRow();
-        int selectedRowUndeSeventeenSquad = underSeventeenTable.getSelectedRow();
 
-        if (selectedRowFirstSquad != -1) {
-            editInfoPlayersSelector(selectedRowFirstSquad, titularesTable, titularesModel);
-        } else if (selectedRowSecondSquad != -1) {
-            editInfoPlayersSelector(selectedRowSecondSquad, reservasTable, reservasModel);
-        } else if (selectedRowUndeSeventeenSquad != -1) {
-            editInfoPlayersSelector(selectedRowUndeSeventeenSquad, underSeventeenTable, underSeventeenModel);
-        } else {
-            JOptionPane.showMessageDialog(null, "Selecione um Jogador para editar");
+        int [] selectedRows = {
+                titularesTable.getSelectedRow(),
+                reservasTable.getSelectedRow(),
+                underSeventeenTable.getSelectedRow()
+        };
+
+        JTable selectedTable = getSelectedTable(selectedRows, titularesTable, reservasTable, underSeventeenTable);
+
+        if (selectedTable != null) {
+            DefaultTableModel selectedTableModel = getTableModel(selectedTable);
+            if (selectedTableModel != null) {
+                editInfoPlayersSelector(selectedTable.getSelectedRow(), selectedTable, selectedTableModel);
+            } else {
+                JOptionPane.showMessageDialog(this, "Selecione um Jogador para editar");
+            }
         }
+
+    }
+
+    private JTable getSelectedTable(int[] selectedRow, JTable... tables) {
+        for (int i = 0; i < tables.length; i++) {
+            if (selectedRow[i] != -1) {
+                return tables[i];
+            }
+        }
+        return null;
+    }
+
+    private DefaultTableModel getTableModel(JTable table) {
+        if (table == titularesTable) {
+            return titularesModel;
+        } else if (table == reservasTable) {
+            return reservasModel;
+        } else if (table == underSeventeenTable) {
+            return underSeventeenModel;
+        }
+        return null;
     }
 
     private void editInfoPlayersSelector(int selectedRow, JTable table, DefaultTableModel model) {
