@@ -99,7 +99,7 @@ public class SquadManager extends JFrame {
         } else if (selectedRowSecondSquad != -1) {
             reservasModel.removeRow(selectedRowSecondSquad);
         } else {
-            JOptionPane.showMessageDialog(null, "Selecione um Jogador");
+            JOptionPane.showMessageDialog(null, "Selecione um Jogador para deletar");
         }
     }
 
