@@ -31,15 +31,13 @@ public class SquadManager extends JFrame {
         JPanel buttonPanel = new JPanel();
         JButton addButton = new JButton("Adicionar Jogador");
         JButton editButton = new JButton("Editar Jogador");
-        JButton deleteButton = new JButton("Excluir Jogador do time titular");
-        JButton deleteButton2 = new JButton("Excluir Jogador do time reserva");
+        JButton deleteButton = new JButton("Excluir Jogador");
         JButton moveButton = new JButton("Mover Jogador para o time reserva");
         JButton moveButton2 = new JButton("Mover Jogador para o time titular");
 
         buttonPanel.add(addButton);
         buttonPanel.add(editButton);
         buttonPanel.add(deleteButton);
-        buttonPanel.add(deleteButton2);
         buttonPanel.add(moveButton2);
         buttonPanel.add(moveButton);
 
@@ -59,13 +57,7 @@ public class SquadManager extends JFrame {
 
         deleteButton.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
-                deletePlayerFromFirstSquad();
-            }
-        });
-
-        deleteButton2.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                deletePlayerFromSecondSquad();
+                deletePlayer();
             }
         });
 
@@ -98,12 +90,17 @@ public class SquadManager extends JFrame {
         selectRow(titularesTable, titularesModel, reservasModel);
     }
 
-    private void deletePlayerFromFirstSquad() {
-        selectRowToDelete(titularesTable, titularesModel);
-    }
+    private void deletePlayer() {
+        int selectedRowFirstSquad = titularesTable.getSelectedRow();
+        int selectedRowSecondSquad = reservasTable.getSelectedRow();
 
-    private void deletePlayerFromSecondSquad() {
-        selectRowToDelete(reservasTable, reservasModel);
+        if (selectedRowFirstSquad != -1) {
+            titularesModel.removeRow(selectedRowFirstSquad);
+        } else if (selectedRowSecondSquad != -1) {
+            reservasModel.removeRow(selectedRowSecondSquad);
+        } else {
+            JOptionPane.showMessageDialog(null, "Selecione um Jogador");
+        }
     }
 
 
@@ -137,14 +134,6 @@ public class SquadManager extends JFrame {
             toTable.addRow(new Object[]{nomeJogador,idadeJogador, posicaoJogador});
             actualTable.removeRow(selectedRow);
         }
-    }
-
-    private void selectRowToDelete(JTable tableModel, DefaultTableModel model) {
-        int selectedRow = tableModel.getSelectedRow();
-        if (selectedRow != -1) {
-            model.removeRow(selectedRow);
-        }
-
     }
 
     public static void main(String[] args) {
