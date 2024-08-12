@@ -37,37 +37,37 @@ public class SquadManager extends JFrame {
 
 
         JPanel buttonPanel = new JPanel();
-        JButton addButton = new JButton("Adicionar Jogador");
-        JButton editButton = new JButton("Editar Jogador");
-        JButton deleteButton = new JButton("Excluir Jogador");
-        JButton movePlayer = new JButton("Mover jogador");
+        JButton editPlayerBtn = new JButton("Editar Jogador");
+        JButton deletePlayerBtn = new JButton("Excluir Jogador");
+        JButton movePlayerBtn = new JButton("Mover jogador");
+        JButton addPlayerBtn = new JButton("Adicionar Jogador");
 
-        buttonPanel.add(addButton);
-        buttonPanel.add(editButton);
-        buttonPanel.add(deleteButton);
-        buttonPanel.add(movePlayer);
+        buttonPanel.add(addPlayerBtn);
+        buttonPanel.add(editPlayerBtn);
+        buttonPanel.add(movePlayerBtn);
+        buttonPanel.add(deletePlayerBtn);
 
 
-        addButton.addActionListener(new ActionListener() {
+        addPlayerBtn.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                addPlayer();
+                addPlayerTest();
             }
         });
 
-        editButton.addActionListener(new ActionListener() {
+        editPlayerBtn.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 editPlayer();
             }
         });
 
-        deleteButton.addActionListener(new ActionListener() {
+        deletePlayerBtn.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 deletePlayer();
             }
         });
 
-        movePlayer.addActionListener(new ActionListener() {
+        movePlayerBtn.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 movePlayers();
             }
@@ -81,6 +81,73 @@ public class SquadManager extends JFrame {
         setSize(1200,800);
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setVisible(true);
+    }
+
+    private void addPlayerTest() {
+        String[] options = {"Titulares", "Reservas", "Sub-17"};
+        JComboBox<String> selectOption = new JComboBox<>(options);
+
+        int result = JOptionPane.showConfirmDialog(this, selectOption,
+                "Escolha para qual time vai adicionar o jogador", JOptionPane.OK_CANCEL_OPTION, JOptionPane.PLAIN_MESSAGE);
+
+        if (result == JOptionPane.OK_OPTION) {
+            String selected = (String) selectOption.getSelectedItem();
+            DefaultTableModel targetModel = null;
+
+            String nomeJogador;
+            int idadeJogador;
+            String posicaoJogador;
+
+            if (selected.equals("Titulares")) {
+                targetModel = titularesModel;
+
+                nomeJogador = JOptionPane.showInputDialog(this, "Qual o nome do jogador");
+                String idadeJogadorStr = JOptionPane.showInputDialog(this, "Qual a idade do jogador");
+
+                try {
+                    idadeJogador = Integer.parseInt(idadeJogadorStr);
+                } catch (NumberFormatException e) {
+                    JOptionPane.showMessageDialog(this, "A idade do jogador deve ser em formato númerico");
+                    return;
+                }
+
+                posicaoJogador = JOptionPane.showInputDialog(this, "Qual a posicao do jogador");
+                Player newPlayer = new Player(nomeJogador, idadeJogador, posicaoJogador);
+                targetModel.addRow(new Object[]{newPlayer.getNome(), newPlayer.getIdade(), newPlayer.getPosicao()});
+            } else if (selected.equals("Reservas")) {
+                targetModel = reservasModel;
+
+                nomeJogador = JOptionPane.showInputDialog(this, "Qual o nome do jogador");
+                String idadeJogadorStr = JOptionPane.showInputDialog(this, "Qual a idade do jogador");
+
+                try {
+                    idadeJogador = Integer.parseInt(idadeJogadorStr);
+                } catch (NumberFormatException e) {
+                    JOptionPane.showMessageDialog(this, "A idade do jogador deve ser em formato númerico");
+                    return;
+                }
+
+                posicaoJogador = JOptionPane.showInputDialog(this, "Qual a posicao do jogador");
+                Player newPlayer = new Player(nomeJogador, idadeJogador, posicaoJogador);
+                targetModel.addRow(new Object[]{newPlayer.getNome(), newPlayer.getIdade(), newPlayer.getPosicao()});
+            } else if (selected.equals("Sub-17")) {
+                targetModel = underSeventeenModel;
+
+                nomeJogador = JOptionPane.showInputDialog(this, "Qual o nome do jogador");
+                String idadeJogadorStr = JOptionPane.showInputDialog(this, "Qual a idade do jogador");
+
+                try {
+                    idadeJogador = Integer.parseInt(idadeJogadorStr);
+                } catch (NumberFormatException e) {
+                    JOptionPane.showMessageDialog(this, "A idade do jogador deve ser em formato númerico");
+                    return;
+                }
+
+                posicaoJogador = JOptionPane.showInputDialog(this, "Qual a posicao do jogador");
+                Player newPlayer = new Player(nomeJogador, idadeJogador, posicaoJogador);
+                targetModel.addRow(new Object[]{newPlayer.getNome(), newPlayer.getIdade(), newPlayer.getPosicao()});
+            }
+        }
     }
 
     private void movePlayers() {
@@ -160,7 +227,6 @@ public class SquadManager extends JFrame {
         }
     }
 
-
     private void editPlayer() {
         int selectedRowFirstSquad = titularesTable.getSelectedRow();
         int selectedRowSecondSquad = reservasTable.getSelectedRow();
@@ -190,34 +256,6 @@ public class SquadManager extends JFrame {
         model.setValueAt(idadeJogador, selectedRow, 1);
         model.setValueAt(posicaoJogador, selectedRow, 2);
     }
-
-    private void addPlayer() {
-        String nomeJogador;
-        int idadeJogador;
-        String posicaoJogador;
-
-        try {
-            nomeJogador = JOptionPane.showInputDialog(this, "Qual o nome do jogador");
-            String idadeJogadorStr = JOptionPane.showInputDialog(this, "Qual a idade do jogador");
-
-            try {
-                idadeJogador = Integer.parseInt(idadeJogadorStr);
-            } catch (NumberFormatException e) {
-                JOptionPane.showMessageDialog(this, "A idade do jogador deve ser em formato númerico");
-                return;
-            }
-
-            posicaoJogador = JOptionPane.showInputDialog(this, "Qual a posicao do jogador");
-
-
-            Player newPlayer = new Player(nomeJogador, idadeJogador, posicaoJogador);
-
-            titularesModel.addRow(new Object[]{newPlayer.getNome(), newPlayer.getIdade(), newPlayer.getPosicao()});
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-    }
-
 
     private int contarJogadoresMais17AnosNaTabelaSub17() {
         int count = 0;
