@@ -1,0 +1,131 @@
+import javax.swing.*;
+import javax.swing.border.TitledBorder;
+import javax.swing.table.DefaultTableModel;
+import java.awt.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+
+public class SquadManager extends JFrame {
+
+    private JTable titularesTable, reservasTable;
+    private DefaultTableModel titularesModel, reservasModel;
+
+    public SquadManager() {
+        setTitle("Squad Manager");
+        setLayout(new BorderLayout());
+
+        titularesModel = new DefaultTableModel(new Object[] {"Nome do Jogador", "Posição do Jogador"}, 0);
+        titularesTable = new JTable(titularesModel);
+        JScrollPane titularesPane = new JScrollPane(titularesTable);
+        titularesPane.setBorder(BorderFactory.createTitledBorder(
+                BorderFactory.createEtchedBorder(), "Titulares", TitledBorder.CENTER, TitledBorder.TOP
+        ));
+
+        reservasModel = new DefaultTableModel(new Object[]{"Nome do Jogador", "Posição do Jogador"}, 0);
+        reservasTable = new JTable(reservasModel);
+        JScrollPane reservaPane = new JScrollPane(reservasTable);
+        reservaPane.setBorder(BorderFactory.createTitledBorder(
+                BorderFactory.createEtchedBorder(), "Reservas", TitledBorder.CENTER, TitledBorder.TOP
+        ));
+
+        JPanel buttonPanel = new JPanel();
+        JButton addButton = new JButton("Adicionar Jogador");
+        JButton editButton = new JButton("Editar Jogador");
+        JButton deleteButton = new JButton("Remover Jogador");
+        JButton moveButton = new JButton("Mover Jogador para o time reserva");
+        JButton moveButton2 = new JButton("Mover Jogador para o time titular");
+
+        buttonPanel.add(addButton);
+        buttonPanel.add(editButton);
+        buttonPanel.add(deleteButton);
+        buttonPanel.add(moveButton);
+        buttonPanel.add(moveButton2);
+
+
+        addButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                addPlayer();
+            }
+        });
+
+        editButton.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                editPlayer();
+            }
+        });
+
+        deleteButton.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                deletePlayer();
+            }
+        });
+
+        moveButton.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                movePlayerToSecondSquad();
+            }
+        });
+
+        moveButton2.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                movePlayerToFirstSquad();
+            }
+        });
+
+        add(titularesPane, BorderLayout.WEST);
+        add(reservaPane, BorderLayout.EAST);
+        add(buttonPanel, BorderLayout.CENTER);
+
+        setSize(1200,800);
+        setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        setVisible(true);
+    }
+
+    private void movePlayerToFirstSquad() {
+        int selectedRow = reservasTable.getSelectedRow();
+        if (selectedRow != -1) {
+            String nomeJogador = reservasModel.getValueAt(selectedRow, 0).toString();
+            String posicaoJogador = reservasModel.getValueAt(selectedRow, 0).toString();
+            titularesModel.addRow(new Object[] {nomeJogador, posicaoJogador});
+            reservasModel.removeRow(selectedRow);
+        }
+    }
+
+    private void movePlayerToSecondSquad() {
+        int selectedRow = titularesTable.getSelectedRow();
+        if (selectedRow != -1) {
+            String nomeJogador = titularesModel.getValueAt(selectedRow, 0).toString();
+            String posicaoJogador = titularesModel.getValueAt(selectedRow, 1).toString();
+            reservasModel.addRow(new Object[]{nomeJogador, posicaoJogador});
+            titularesModel.removeRow(selectedRow);
+        }
+    }
+
+    private void deletePlayer() {
+        int selectedRow = titularesTable.getSelectedRow();
+        if (selectedRow != -1) {
+            titularesModel.removeRow(selectedRow);
+        }
+    }
+
+    private void editPlayer() {
+        int selectedRow = titularesTable.getSelectedRow();
+        if (selectedRow != -1) {
+            String nomeJogador = JOptionPane.showInputDialog(this,"Edite o nome do jogador:", titularesTable.getValueAt(selectedRow, 0));
+            String posicaoJogador = JOptionPane.showInputDialog(this,"Edite a posição do jogador:", titularesTable.getValueAt(selectedRow, 1));
+            titularesModel.setValueAt(nomeJogador, selectedRow, 0);
+            titularesModel.setValueAt(posicaoJogador, selectedRow, 1);
+        }
+    }
+
+    private void addPlayer() {
+        String nomeJogador = JOptionPane.showInputDialog("Digite o nome do Jogador");
+        String posicaoJogador = JOptionPane.showInputDialog("Digite a posição do jogador");
+        titularesModel.addRow(new Object[] {nomeJogador, posicaoJogador});
+    }
+
+    public static void main(String[] args) {
+        new SquadManager();
+    }
+}
