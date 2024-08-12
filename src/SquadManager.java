@@ -14,14 +14,14 @@ public class SquadManager extends JFrame {
         setTitle("Squad Manager");
         setLayout(new BorderLayout());
 
-        titularesModel = new DefaultTableModel(new Object[] {"Nome do Jogador", "Posição do Jogador"}, 0);
+        titularesModel = new DefaultTableModel(new Object[] {"Nome do Jogador", "Idade", "Posição do Jogador"}, 0);
         titularesTable = new JTable(titularesModel);
         JScrollPane titularesPane = new JScrollPane(titularesTable);
         titularesPane.setBorder(BorderFactory.createTitledBorder(
                 BorderFactory.createEtchedBorder(), "Titulares", TitledBorder.CENTER, TitledBorder.TOP
         ));
 
-        reservasModel = new DefaultTableModel(new Object[]{"Nome do Jogador", "Posição do Jogador"}, 0);
+        reservasModel = new DefaultTableModel(new Object[]{"Nome do Jogador","Idade", "Posição do Jogador"}, 0);
         reservasTable = new JTable(reservasModel);
         JScrollPane reservaPane = new JScrollPane(reservasTable);
         reservaPane.setBorder(BorderFactory.createTitledBorder(
@@ -83,22 +83,22 @@ public class SquadManager extends JFrame {
     }
 
     private void movePlayerToFirstSquad() {
-        int selectedRow = reservasTable.getSelectedRow();
-        if (selectedRow != -1) {
-            String nomeJogador = reservasModel.getValueAt(selectedRow, 0).toString();
-            String posicaoJogador = reservasModel.getValueAt(selectedRow, 0).toString();
-            titularesModel.addRow(new Object[] {nomeJogador, posicaoJogador});
-            reservasModel.removeRow(selectedRow);
-        }
+        selectRow(reservasTable, reservasModel, titularesModel);
     }
 
     private void movePlayerToSecondSquad() {
-        int selectedRow = titularesTable.getSelectedRow();
+        selectRow(titularesTable, titularesModel, reservasModel);
+    }
+
+    private void selectRow(JTable table, DefaultTableModel actualTable, DefaultTableModel toTable) {
+        int selectedRow = table.getSelectedRow();
         if (selectedRow != -1) {
-            String nomeJogador = titularesModel.getValueAt(selectedRow, 0).toString();
-            String posicaoJogador = titularesModel.getValueAt(selectedRow, 1).toString();
-            reservasModel.addRow(new Object[]{nomeJogador, posicaoJogador});
-            titularesModel.removeRow(selectedRow);
+            String nomeJogador = actualTable.getValueAt(selectedRow, 0).toString();
+            int idadeJogador = Integer.parseInt(actualTable.getValueAt(selectedRow, 1).toString());
+            String posicaoJogador = actualTable.getValueAt(selectedRow, 2).toString();
+
+            toTable.addRow(new Object[]{nomeJogador,idadeJogador, posicaoJogador});
+            actualTable.removeRow(selectedRow);
         }
     }
 
@@ -120,9 +120,13 @@ public class SquadManager extends JFrame {
     }
 
     private void addPlayer() {
-        String nomeJogador = JOptionPane.showInputDialog("Digite o nome do Jogador");
-        String posicaoJogador = JOptionPane.showInputDialog("Digite a posição do jogador");
-        titularesModel.addRow(new Object[] {nomeJogador, posicaoJogador});
+        String nomeJogador = JOptionPane.showInputDialog(this, "Qual o nome do jogador");
+        int idadeJogador = Integer.parseInt(JOptionPane.showInputDialog(this, "Qual a idade do jogador"));
+        String posicaoJogador = JOptionPane.showInputDialog(this, "Qual a posicao do jogador");
+
+        Jogador novoJogador = new Jogador(nomeJogador, idadeJogador, posicaoJogador);
+
+        titularesModel.addRow(new Object[]{novoJogador.getNome(), novoJogador.getIdade(), novoJogador.getPosicao()});
     }
 
     public static void main(String[] args) {
