@@ -1,12 +1,10 @@
-import javax.swing.*;
-
-public class Jogador {
+public class Player {
     private String nome;
     private int idade;
     private String posicao;
     private String time;
 
-    public Jogador(String nome, int idade, String posicao) {
+    public Player(String nome, int idade, String posicao) {
         this.nome = nome;
         this.idade = idade;
         this.posicao = posicao;

@@ -124,9 +124,9 @@ public class SquadManager extends JFrame {
         int idadeJogador = Integer.parseInt(JOptionPane.showInputDialog(this, "Qual a idade do jogador"));
         String posicaoJogador = JOptionPane.showInputDialog(this, "Qual a posicao do jogador");
 
-        Jogador novoJogador = new Jogador(nomeJogador, idadeJogador, posicaoJogador);
+        Player newPlayer = new Player(nomeJogador, idadeJogador, posicaoJogador);
 
-        titularesModel.addRow(new Object[]{novoJogador.getNome(), novoJogador.getIdade(), novoJogador.getPosicao()});
+        titularesModel.addRow(new Object[]{newPlayer.getNome(), newPlayer.getIdade(), newPlayer.getPosicao()});
     }
 
     public static void main(String[] args) {
