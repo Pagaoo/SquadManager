@@ -105,13 +105,28 @@ public class SquadManager extends JFrame {
 
 
     private void editPlayer() {
-        int selectedRow = titularesTable.getSelectedRow();
-        if (selectedRow != -1) {
-            String nomeJogador = JOptionPane.showInputDialog(this,"Edite o nome do jogador:", titularesTable.getValueAt(selectedRow, 0));
-            String posicaoJogador = JOptionPane.showInputDialog(this,"Edite a posição do jogador:", titularesTable.getValueAt(selectedRow, 1));
-            titularesModel.setValueAt(nomeJogador, selectedRow, 0);
-            titularesModel.setValueAt(posicaoJogador, selectedRow, 1);
+        int selectedRowFirstSquad = titularesTable.getSelectedRow();
+        int selectedRowSecondSquad = reservasTable.getSelectedRow();
+
+        if (selectedRowFirstSquad != -1) {
+            editInfoPlayersSelector(selectedRowFirstSquad, titularesTable, titularesModel);
+        } else if (selectedRowSecondSquad != -1) {
+            editInfoPlayersSelector(selectedRowSecondSquad, reservasTable, reservasModel);
         }
+    }
+
+    private void editInfoPlayersSelector(int selectedRow, JTable table, DefaultTableModel model) {
+        String nomeJogador;
+        int idadeJogador;
+        String posicaoJogador;
+
+        nomeJogador = JOptionPane.showInputDialog(this, "Edite o nome do jogador:", table.getValueAt(selectedRow, 0));
+        idadeJogador = Integer.parseInt(JOptionPane.showInputDialog(this, "Edite a idade do jogador:", table.getValueAt(selectedRow, 1)));
+        posicaoJogador = JOptionPane.showInputDialog(this, "Edite a posição do jogador:", table.getValueAt(selectedRow, 2));
+
+        model.setValueAt(nomeJogador, selectedRow, 0);
+        model.setValueAt(idadeJogador, selectedRow, 1);
+        model.setValueAt(posicaoJogador, selectedRow, 2);
     }
 
     private void addPlayer() {
