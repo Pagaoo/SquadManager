@@ -31,15 +31,17 @@ public class SquadManager extends JFrame {
         JPanel buttonPanel = new JPanel();
         JButton addButton = new JButton("Adicionar Jogador");
         JButton editButton = new JButton("Editar Jogador");
-        JButton deleteButton = new JButton("Remover Jogador");
+        JButton deleteButton = new JButton("Excluir Jogador do time titular");
+        JButton deleteButton2 = new JButton("Excluir Jogador do time reserva");
         JButton moveButton = new JButton("Mover Jogador para o time reserva");
         JButton moveButton2 = new JButton("Mover Jogador para o time titular");
 
         buttonPanel.add(addButton);
         buttonPanel.add(editButton);
         buttonPanel.add(deleteButton);
-        buttonPanel.add(moveButton);
+        buttonPanel.add(deleteButton2);
         buttonPanel.add(moveButton2);
+        buttonPanel.add(moveButton);
 
 
         addButton.addActionListener(new ActionListener() {
@@ -57,19 +59,25 @@ public class SquadManager extends JFrame {
 
         deleteButton.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
-                deletePlayer();
+                deletePlayerFromFirstSquad();
             }
         });
 
-        moveButton.addActionListener(new ActionListener() {
+        deleteButton2.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
-                movePlayerToSecondSquad();
+                deletePlayerFromSecondSquad();
             }
         });
 
         moveButton2.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 movePlayerToFirstSquad();
+            }
+        });
+
+        moveButton.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                movePlayerToSecondSquad();
             }
         });
 
@@ -90,24 +98,14 @@ public class SquadManager extends JFrame {
         selectRow(titularesTable, titularesModel, reservasModel);
     }
 
-    private void selectRow(JTable table, DefaultTableModel actualTable, DefaultTableModel toTable) {
-        int selectedRow = table.getSelectedRow();
-        if (selectedRow != -1) {
-            String nomeJogador = actualTable.getValueAt(selectedRow, 0).toString();
-            int idadeJogador = Integer.parseInt(actualTable.getValueAt(selectedRow, 1).toString());
-            String posicaoJogador = actualTable.getValueAt(selectedRow, 2).toString();
-
-            toTable.addRow(new Object[]{nomeJogador,idadeJogador, posicaoJogador});
-            actualTable.removeRow(selectedRow);
-        }
+    private void deletePlayerFromFirstSquad() {
+        selectRowToDelete(titularesTable, titularesModel);
     }
 
-    private void deletePlayer() {
-        int selectedRow = titularesTable.getSelectedRow();
-        if (selectedRow != -1) {
-            titularesModel.removeRow(selectedRow);
-        }
+    private void deletePlayerFromSecondSquad() {
+        selectRowToDelete(reservasTable, reservasModel);
     }
+
 
     private void editPlayer() {
         int selectedRow = titularesTable.getSelectedRow();
@@ -127,6 +125,26 @@ public class SquadManager extends JFrame {
         Player newPlayer = new Player(nomeJogador, idadeJogador, posicaoJogador);
 
         titularesModel.addRow(new Object[]{newPlayer.getNome(), newPlayer.getIdade(), newPlayer.getPosicao()});
+    }
+
+    private void selectRow(JTable table, DefaultTableModel actualTable, DefaultTableModel toTable) {
+        int selectedRow = table.getSelectedRow();
+        if (selectedRow != -1) {
+            String nomeJogador = actualTable.getValueAt(selectedRow, 0).toString();
+            int idadeJogador = Integer.parseInt(actualTable.getValueAt(selectedRow, 1).toString());
+            String posicaoJogador = actualTable.getValueAt(selectedRow, 2).toString();
+
+            toTable.addRow(new Object[]{nomeJogador,idadeJogador, posicaoJogador});
+            actualTable.removeRow(selectedRow);
+        }
+    }
+
+    private void selectRowToDelete(JTable tableModel, DefaultTableModel model) {
+        int selectedRow = tableModel.getSelectedRow();
+        if (selectedRow != -1) {
+            model.removeRow(selectedRow);
+        }
+
     }
 
     public static void main(String[] args) {
