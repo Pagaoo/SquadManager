@@ -6,6 +6,10 @@ import javax.swing.table.DefaultTableModel;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.SQLException;
+import java.sql.Statement;
 
 public class SquadManager extends JFrame {
 
@@ -58,23 +62,26 @@ public class SquadManager extends JFrame {
         addPlayerBtn.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                addPlayerTest();
+                addPlayer();
             }
         });
 
         editPlayerBtn.addActionListener(new ActionListener() {
+            @Override
             public void actionPerformed(ActionEvent e) {
                 editPlayer();
             }
         });
 
         deletePlayerBtn.addActionListener(new ActionListener() {
+            @Override
             public void actionPerformed(ActionEvent e) {
                 deletePlayer();
             }
         });
 
         movePlayerBtn.addActionListener(new ActionListener() {
+            @Override
             public void actionPerformed(ActionEvent e) {
                 movePlayers();
             }
@@ -96,7 +103,7 @@ public class SquadManager extends JFrame {
         underSeventeenTable.getSelectionModel().addListSelectionListener(new TableSelectionListener(underSeventeenTable));
     }
 
-    private void addPlayerTest() {
+    private void addPlayer() {
         String[] options = {"Titulares", "Reservas", "Sub-17"};
         JComboBox<String> selectOption = new JComboBox<>(options);
 
@@ -106,60 +113,80 @@ public class SquadManager extends JFrame {
         if (result == JOptionPane.OK_OPTION) {
             String selected = (String) selectOption.getSelectedItem();
             DefaultTableModel targetModel = null;
-
-            String nomeJogador;
-            int idadeJogador;
-            String posicaoJogador;
+            String tableName = null;
 
             if (selected.equals("Titulares")) {
                 targetModel = titularesModel;
-
-                nomeJogador = JOptionPane.showInputDialog(this, "Qual o nome do jogador");
-                String idadeJogadorStr = JOptionPane.showInputDialog(this, "Qual a idade do jogador");
-
-                try {
-                    idadeJogador = Integer.parseInt(idadeJogadorStr);
-                } catch (NumberFormatException e) {
-                    JOptionPane.showMessageDialog(this, "A idade do jogador deve ser em formato númerico");
-                    return;
-                }
-
-                posicaoJogador = JOptionPane.showInputDialog(this, "Qual a posicao do jogador");
-                Player newPlayer = new Player(nomeJogador, idadeJogador, posicaoJogador);
-                targetModel.addRow(new Object[]{newPlayer.getNome(), newPlayer.getIdade(), newPlayer.getPosicao()});
+                tableName = "titulares";
             } else if (selected.equals("Reservas")) {
                 targetModel = reservasModel;
-
-                nomeJogador = JOptionPane.showInputDialog(this, "Qual o nome do jogador");
-                String idadeJogadorStr = JOptionPane.showInputDialog(this, "Qual a idade do jogador");
-
-                try {
-                    idadeJogador = Integer.parseInt(idadeJogadorStr);
-                } catch (NumberFormatException e) {
-                    JOptionPane.showMessageDialog(this, "A idade do jogador deve ser em formato númerico");
-                    return;
-                }
-
-                posicaoJogador = JOptionPane.showInputDialog(this, "Qual a posicao do jogador");
-                Player newPlayer = new Player(nomeJogador, idadeJogador, posicaoJogador);
-                targetModel.addRow(new Object[]{newPlayer.getNome(), newPlayer.getIdade(), newPlayer.getPosicao()});
+                tableName = "reservas";
             } else if (selected.equals("Sub-17")) {
                 targetModel = underSeventeenModel;
-
-                nomeJogador = JOptionPane.showInputDialog(this, "Qual o nome do jogador");
-                String idadeJogadorStr = JOptionPane.showInputDialog(this, "Qual a idade do jogador");
-
-                try {
-                    idadeJogador = Integer.parseInt(idadeJogadorStr);
-                } catch (NumberFormatException e) {
-                    JOptionPane.showMessageDialog(this, "A idade do jogador deve ser em formato númerico");
-                    return;
-                }
-
-                posicaoJogador = JOptionPane.showInputDialog(this, "Qual a posicao do jogador");
-                Player newPlayer = new Player(nomeJogador, idadeJogador, posicaoJogador);
-                targetModel.addRow(new Object[]{newPlayer.getNome(), newPlayer.getIdade(), newPlayer.getPosicao()});
+                tableName = "sub_17";
             }
+
+            Player newPlayer = playerData();
+            if (newPlayer != null && targetModel != null && tableName != null) {
+                insertPlayerIntoDatabase(newPlayer, tableName);
+                targetModel.addRow(new Object[] {newPlayer.getNome(), newPlayer.getIdade(), newPlayer.getPosicao()});
+            }
+        }
+    }
+
+    private Player playerData() {
+        String nomeJogador = JOptionPane.showInputDialog(this, "Qual o nome do jogador");
+        if (nomeJogador.equals("") || nomeJogador == null || nomeJogador.isEmpty()) {
+            return null;
+        }
+
+        String idadeJogadorStr = JOptionPane.showInputDialog(this, "Qual a idade do jogador");
+        int idadeJogador;
+        try {
+            idadeJogador = Integer.parseInt(idadeJogadorStr);
+        } catch (NumberFormatException e) {
+            JOptionPane.showMessageDialog(this, "A idade do jogador deve estar em formato númerico");
+            return null;
+        }
+        if (idadeJogador < 0 || idadeJogador > 100) {
+            return null;
+        }
+
+        String posicaoJogador = JOptionPane.showInputDialog(this, "Qual a posicao do jogador");
+        if (posicaoJogador.equals("") || posicaoJogador == null) {
+            return null;
+        }
+
+        return new Player(nomeJogador, idadeJogador, posicaoJogador);
+    }
+
+    private void insertPlayerIntoDatabase(Player player, String tableName) {
+        ensureTableExists(tableName);
+        String sql = "INSERT INTO " + tableName + " (nome, idade, posicao) VALUES (?,?,?)";
+        try (Connection connection = DatabaseConnector.getConnection();
+        PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
+            preparedStatement.setString(1, player.getNome());
+            preparedStatement.setInt(2, player.getIdade());
+            preparedStatement.setString(3, player.getPosicao());
+            preparedStatement.executeUpdate();
+            JOptionPane.showMessageDialog(this, "Jogador inserido com sucesso");
+        } catch (SQLException e) {
+            JOptionPane.showMessageDialog(this, "Erro ao inserir o jogador " + e.getMessage());
+        }
+    }
+
+    private void ensureTableExists(String tableName) {
+        String CreateTableSql = "CREATE TABLE IF NOT EXISTS " + tableName +
+                " (id SERIAL PRIMARY KEY, " +
+                "nome VARCHAR(255) NOT NULL, " +
+                "idade INT, " +
+                "posicao VARCHAR(255) NOT NULL" +
+                ")";
+        try (Connection connection = DatabaseConnector.getConnection();
+             Statement statement = connection.createStatement()) {
+            statement.executeUpdate(CreateTableSql);
+        } catch (SQLException e) {
+            JOptionPane.showMessageDialog(this, "Erro ao criar tabela na base de dados " + e.getMessage());
         }
     }
 
