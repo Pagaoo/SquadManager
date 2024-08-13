@@ -195,7 +195,7 @@ public class SquadManager extends JFrame {
         ensureTableExists(tableName);
         String sql = "INSERT INTO " + tableName + " (nome, idade, posicao) VALUES (?,?,?)";
         try (Connection connection = DatabaseConnector.getConnection();
-        PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
+             PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
             preparedStatement.setString(1, player.getNome());
             preparedStatement.setInt(2, player.getIdade());
             preparedStatement.setString(3, player.getPosicao());
@@ -280,6 +280,10 @@ public class SquadManager extends JFrame {
         } else {
             JOptionPane.showMessageDialog(this, "Selecione um jogador para mover");
         }
+    }
+
+    private void movePlayerToAnotherDbTable() {
+
     }
 
     private void deletePlayer() {
@@ -380,21 +384,21 @@ public class SquadManager extends JFrame {
 
             ListSelectionModel selectionModel = (ListSelectionModel) e.getSource();
 
-           if (!selectionModel.isSelectionEmpty()) {
-               if (currentTable == titularesTable) {
-                   reservasTable.getSelectionModel().clearSelection();
-                   underSeventeenTable.getSelectionModel().clearSelection();
-               }
-               if (currentTable == reservasTable) {
-                   titularesTable.getSelectionModel().clearSelection();
-                   underSeventeenTable.getSelectionModel().clearSelection();
-               }
-               if (currentTable == underSeventeenTable) {
-                   titularesTable.getSelectionModel().clearSelection();
-                   reservasTable.getSelectionModel().clearSelection();
-               }
+            if (!selectionModel.isSelectionEmpty()) {
+                if (currentTable == titularesTable) {
+                    reservasTable.getSelectionModel().clearSelection();
+                    underSeventeenTable.getSelectionModel().clearSelection();
+                }
+                if (currentTable == reservasTable) {
+                    titularesTable.getSelectionModel().clearSelection();
+                    underSeventeenTable.getSelectionModel().clearSelection();
+                }
+                if (currentTable == underSeventeenTable) {
+                    titularesTable.getSelectionModel().clearSelection();
+                    reservasTable.getSelectionModel().clearSelection();
+                }
 
-           }
+            }
         }
     }
 
