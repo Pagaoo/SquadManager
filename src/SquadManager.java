@@ -286,20 +286,49 @@ public class SquadManager extends JFrame {
     }
 
     private void deletePlayer() {
-        int [] selectedRows = {
-                titularesTable.getSelectedRow(),
-                reservasTable.getSelectedRow(),
-                underSeventeenTable.getSelectedRow()
-        };
+        JTable selectedTable = null;
+        DefaultTableModel selectedTableModel = null;
 
-        JTable selectedTable = getSelectedTable(selectedRows, titularesTable, reservasTable, underSeventeenTable);
-        if (selectedTable != null) {
-            DefaultTableModel selectedTableModel = getTableModel(selectedTable);
-            if (selectedTableModel != null) {
-                selectedTableModel.removeRow(selectedTable.getSelectedRow());
+        if (titularesTable.getSelectedRow() != -1) {
+            selectedTable = titularesTable;
+            selectedTableModel = titularesModel;
+        } else if (reservasTable.getSelectedRow() != -1) {
+            selectedTable = reservasTable;
+            selectedTableModel = reservasModel;
+        } else if (underSeventeenTable.getSelectedRow() != -1) {
+            selectedTable = underSeventeenTable;
+            selectedTableModel = underSeventeenModel;
+        }
+
+        if (selectedTable != null && selectedTableModel != null) {
+            int selectedRow = selectedTable.getSelectedRow();
+            if (selectedRow != -1) {
+                String nomeJogador = String.valueOf(selectedTableModel.getValueAt(selectedRow, 0));
+                int idadeJogador = Integer.parseInt(String.valueOf(selectedTableModel.getValueAt(selectedRow, 1)));
+                String posicaoJogador = String.valueOf(selectedTableModel.getValueAt(selectedRow, 2));
+
+                String tableName = null;
+
+                if (titularesTable == selectedTable) {
+                    tableName = "titulares";
+                } else if (reservasTable == selectedTable) {
+                    tableName = "reservas";
+                } else if (underSeventeenTable == selectedTable) {
+                    tableName = "sub17";
+                }
+
+                if (tableName != null) {
+                    deletePlayerFromDbTable(new Player(nomeJogador, idadeJogador, posicaoJogador), tableName);
+                    selectedTableModel.removeRow(selectedRow);
+                    JOptionPane.showMessageDialog(this,"Jogador removido com sucesso");
+                } else {
+                    System.out.println( "Erro ao selecionar a tabela para excluir");
+                }
             } else {
-                JOptionPane.showMessageDialog(null, "Selecione um Jogador para deletar");
+                JOptionPane.showMessageDialog(this, "Selecione um jogador para remover");
             }
+        } else {
+            JOptionPane.showMessageDialog(this, "Nenhum Jogador foi selecionado");
         }
     }
 
