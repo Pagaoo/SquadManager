@@ -213,16 +213,20 @@ public class SquadManager extends JFrame {
     private void movePlayers() {
         JTable selectedTable = null;
         DefaultTableModel selectedTableModel = null;
+        String sourceTable = null;
 
         if (titularesTable.getSelectedRow() != -1) {
             selectedTable = titularesTable;
             selectedTableModel = titularesModel;
+            sourceTable = "titulares";
         } else if (reservasTable.getSelectedRow() != -1) {
             selectedTable = reservasTable;
             selectedTableModel = reservasModel;
+            sourceTable = "reservas";
         } else if (underSeventeenTable.getSelectedRow() != -1) {
             selectedTable = underSeventeenTable;
             selectedTableModel = underSeventeenModel;
+            sourceTable = "sub17";
         }
 
         if (selectedTable != null && selectedTableModel != null) {
@@ -237,16 +241,20 @@ public class SquadManager extends JFrame {
                 String selected = (String) selectOption.getSelectedItem();
                 DefaultTableModel targetModel = null;
                 JTable targetTable = null;
+                String targerTableName = null;
 
                 if (selected.equals("Titulares")) {
                     targetTable = titularesTable;
                     targetModel = titularesModel;
+                    targerTableName = "titulares";
                 } else if (selected.equals("Reservas")) {
                     targetTable = reservasTable;
                     targetModel = reservasModel;
+                    targerTableName = "reservas";
                 } else if (selected.equals("Sub-17")) {
                     targetTable = underSeventeenTable;
                     targetModel = underSeventeenModel;
+                    targerTableName = "sub17";
                 }
 
                 if (targetModel != null && targetTable != selectedTable) {
@@ -259,7 +267,7 @@ public class SquadManager extends JFrame {
                     if (targetTable == underSeventeenTable && idadeJogador > 17 && contarJogadoresMais17AnosNaTabelaSub17() >= 3) {
                         JOptionPane.showMessageDialog(this, "Só pode ter 3 jogadores com mais de 17 anos no sub-17");
                     } else {
-                        movePlayerToAnotherDbTable(new Player(nomeJogador, idadeJogador, posicaoJogador), String.valueOf(targetTable));
+                        movePlayerToAnotherDbTable(new Player(nomeJogador, idadeJogador, posicaoJogador), sourceTable, targerTableName);
                         targetModel.addRow(new Object[]{nomeJogador, idadeJogador, posicaoJogador});
                         selectedTableModel.removeRow(selectRow);
                     }
@@ -272,8 +280,9 @@ public class SquadManager extends JFrame {
         }
     }
 
-    private void movePlayerToAnotherDbTable(Player player, String tableName) {
-        insertPlayerIntoDatabase(player, tableName);
+    private void movePlayerToAnotherDbTable(Player player, String sourceTable, String targetTable) {
+        insertPlayerIntoDatabase(player, targetTable);
+        deletePlayerFromDbTable(player, sourceTable);
     }
 
     private void deletePlayer() {
@@ -291,6 +300,18 @@ public class SquadManager extends JFrame {
             } else {
                 JOptionPane.showMessageDialog(null, "Selecione um Jogador para deletar");
             }
+        }
+    }
+
+    private void deletePlayerFromDbTable(Player player, String tableName) {
+        String deleteQuery = "DELETE FROM " + tableName + " WHERE nome = ? AND idade = ? AND posicao = ?";
+        try (Connection connection = DatabaseConnector.getConnection(); PreparedStatement preparedStatement = connection.prepareStatement(deleteQuery) ){
+            preparedStatement.setString(1, player.getNome());
+            preparedStatement.setInt(2, player.getIdade());
+            preparedStatement.setString(3, player.getPosicao());
+            preparedStatement.executeUpdate();
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
         }
     }
 
