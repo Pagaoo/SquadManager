@@ -167,10 +167,6 @@ public class SquadManager extends JFrame {
 
     private Player playerData() {
         String nomeJogador = JOptionPane.showInputDialog(this, "Qual o nome do jogador");
-        if (nomeJogador.equals("") || nomeJogador == null || nomeJogador.isEmpty()) {
-            return null;
-        }
-
         String idadeJogadorStr = JOptionPane.showInputDialog(this, "Qual a idade do jogador");
         int idadeJogador;
         try {
@@ -179,14 +175,7 @@ public class SquadManager extends JFrame {
             JOptionPane.showMessageDialog(this, "A idade do jogador deve estar em formato númerico");
             return null;
         }
-        if (idadeJogador < 0 || idadeJogador > 100) {
-            return null;
-        }
-
         String posicaoJogador = JOptionPane.showInputDialog(this, "Qual a posicao do jogador");
-        if (posicaoJogador.equals("") || posicaoJogador == null) {
-            return null;
-        }
 
         return new Player(nomeJogador, idadeJogador, posicaoJogador);
     }
@@ -270,6 +259,7 @@ public class SquadManager extends JFrame {
                     if (targetTable == underSeventeenTable && idadeJogador > 17 && contarJogadoresMais17AnosNaTabelaSub17() >= 3) {
                         JOptionPane.showMessageDialog(this, "Só pode ter 3 jogadores com mais de 17 anos no sub-17");
                     } else {
+                        movePlayerToAnotherDbTable(new Player(nomeJogador, idadeJogador, posicaoJogador), String.valueOf(targetTable));
                         targetModel.addRow(new Object[]{nomeJogador, idadeJogador, posicaoJogador});
                         selectedTableModel.removeRow(selectRow);
                     }
@@ -282,8 +272,8 @@ public class SquadManager extends JFrame {
         }
     }
 
-    private void movePlayerToAnotherDbTable() {
-
+    private void movePlayerToAnotherDbTable(Player player, String tableName) {
+        insertPlayerIntoDatabase(player, tableName);
     }
 
     private void deletePlayer() {
