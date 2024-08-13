@@ -6,10 +6,7 @@ import javax.swing.table.DefaultTableModel;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.SQLException;
-import java.sql.Statement;
+import java.sql.*;
 
 public class SquadManager extends JFrame {
 
@@ -58,7 +55,6 @@ public class SquadManager extends JFrame {
         buttonPanel.add(movePlayerBtn);
         buttonPanel.add(deletePlayerBtn);
 
-
         addPlayerBtn.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
@@ -95,6 +91,41 @@ public class SquadManager extends JFrame {
         setSize(1200,800);
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setVisible(true);
+
+        createTables();
+        loadDB();
+    }
+
+    private void createTables() {
+        ensureTableExists("titulares");
+        ensureTableExists("reservas");
+        ensureTableExists("sub17");
+    }
+
+    private void loadDB() {
+        try (Connection connection = DatabaseConnector.getConnection()){
+            loadTableData(connection, "SELECT * FROM titulares", titularesModel);
+            loadTableData(connection, "SELECT * FROM reservas", reservasModel);
+            loadTableData(connection, "SELECT * FROM sub17", underSeventeenModel);
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    private void loadTableData(Connection connection, String query, DefaultTableModel model) {
+        try (Statement statement = connection.createStatement();
+             ResultSet resultSet = statement.executeQuery(query)) {
+            model.setRowCount(0);
+
+            while (resultSet.next()) {
+                String nome = resultSet.getString("nome");
+                int idade = resultSet.getInt("idade");
+                String posicao = resultSet.getString("posicao");
+                model.addRow(new Object[]{nome, idade, posicao});
+            }
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     private void tableSelectionListener() {
