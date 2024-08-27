@@ -17,21 +17,21 @@ public class SquadManager extends JFrame {
         setTitle("Squad Manager");
         setLayout(new BorderLayout());
 
-        titularesModel = new DefaultTableModel(new Object[] {"Nome do Jogador", "Idade", "Posição do Jogador"}, 0);
+        titularesModel = new DefaultTableModel(new Object[] {"Matricula","Nome do Jogador", "Idade", "Posição do Jogador", "Número da camisa"}, 0);
         titularesTable = new JTable(titularesModel);
         JScrollPane titularesPane = new JScrollPane(titularesTable);
         titularesPane.setBorder(BorderFactory.createTitledBorder(
                 BorderFactory.createEtchedBorder(), "Titulares", TitledBorder.CENTER, TitledBorder.TOP
         ));
 
-        reservasModel = new DefaultTableModel(new Object[]{"Nome do Jogador","Idade", "Posição do Jogador"}, 0);
+        reservasModel = new DefaultTableModel(new Object[]{"Matricula","Nome do Jogador", "Idade", "Posição do Jogador", "Número da camisa"}, 0);
         reservasTable = new JTable(reservasModel);
         JScrollPane reservaPane = new JScrollPane(reservasTable);
         reservaPane.setBorder(BorderFactory.createTitledBorder(
                 BorderFactory.createEtchedBorder(), "Reservas", TitledBorder.CENTER, TitledBorder.TOP
         ));
 
-        underSeventeenModel = new DefaultTableModel(new Object[]{"Nome do Jogador", "Idade", "Posição do Jogador"}, 0);
+        underSeventeenModel = new DefaultTableModel(new Object[]{"Matricula","Nome do Jogador", "Idade", "Posição do Jogador", "Número da camisa"}, 0);
         underSeventeenTable = new JTable(underSeventeenModel);
         JScrollPane underSeventeenPane = new JScrollPane(underSeventeenTable);
         underSeventeenPane.setBorder(BorderFactory.createTitledBorder(

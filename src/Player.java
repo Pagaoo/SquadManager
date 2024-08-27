@@ -1,14 +1,34 @@
 public class Player {
+    private int matricula;
     private String nome;
     private int idade;
     private String posicao;
+    private int numeroCamisa;
     private String time;
 
     public Player(String nome, int idade, String posicao) {
+        this.matricula = 0;
         this.nome = nome;
         this.idade = idade;
         this.posicao = posicao;
+        this.numeroCamisa = 0;
         time = null;
+    }
+
+    public int getMatricula() {
+        return matricula;
+    }
+
+    public void setMatricula(int matricula) {
+        this.matricula = matricula;
+    }
+
+    public int getNumeroCamisa() {
+        return numeroCamisa;
+    }
+
+    public void setNumeroCamisa(int numeroCamisa) {
+        this.numeroCamisa = numeroCamisa;
     }
 
     public String getNome() {
