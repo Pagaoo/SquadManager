@@ -373,58 +373,97 @@ public class SquadManager extends JFrame {
     }
 
     private void editPlayer() {
+        JTable selectedTable = null;
+        DefaultTableModel selectedTableModel = null;
 
-        int [] selectedRows = {
-                titularesTable.getSelectedRow(),
-                reservasTable.getSelectedRow(),
-                underSeventeenTable.getSelectedRow()
-        };
+        if (titularesTable.getSelectedRow() != -1) {
+            selectedTable = titularesTable;
+            selectedTableModel = titularesModel;
+        } else if (reservasTable.getSelectedRow() != -1) {
+            selectedTable = reservasTable;
+            selectedTableModel = reservasModel;
+        } else if (underSeventeenTable.getSelectedRow() != -1) {
+            selectedTable = underSeventeenTable;
+            selectedTableModel = underSeventeenModel;
+        }
 
-        JTable selectedTable = getSelectedTable(selectedRows, titularesTable, reservasTable, underSeventeenTable);
+        if (selectedTable != null && selectedTableModel != null) {
+            int selectedRow = selectedTable.getSelectedRow();
+            if (selectedRow != -1) {
+                int matricula = Integer.parseInt(String.valueOf(selectedTableModel.getValueAt(selectedRow, 0)));
+                String nomeJogador = String.valueOf(selectedTableModel.getValueAt(selectedRow, 1));
+                int idadeJogador = Integer.parseInt(String.valueOf(selectedTableModel.getValueAt(selectedRow, 2)));
+                String posicaoJogador = String.valueOf(selectedTableModel.getValueAt(selectedRow, 3));
+                int numeroCamisa = Integer.parseInt(String.valueOf(selectedTableModel.getValueAt(selectedRow, 4)));
 
-        if (selectedTable != null) {
-            DefaultTableModel selectedTableModel = getTableModel(selectedTable);
-            if (selectedTableModel != null) {
-                editInfoPlayersSelector(selectedTable.getSelectedRow(), selectedTable, selectedTableModel);
+
+                JPanel editPanel = new JPanel(new GridLayout(5,2));
+                JTextField nomeField = new JTextField(nomeJogador);
+                JTextField idadeField = new JTextField(String.valueOf(idadeJogador));
+                JTextField posicaoField = new JTextField(String.valueOf(posicaoJogador));
+                JTextField numeroCamisaField = new JTextField(String.valueOf(numeroCamisa));
+
+                editPanel.add(new JLabel("Nome:"));
+                editPanel.add(nomeField);
+                editPanel.add(new JLabel("Idade:"));
+                editPanel.add(idadeField);
+                editPanel.add(new JLabel("Posicao:"));
+                editPanel.add(posicaoField);
+                editPanel.add(new JLabel("Número da Camisa:"));
+                editPanel.add(numeroCamisaField);
+
+                int res = JOptionPane.showConfirmDialog(this, editPanel, "Editar Jogador", JOptionPane.OK_CANCEL_OPTION, JOptionPane.PLAIN_MESSAGE);
+                if (res == JOptionPane.OK_OPTION) {
+                    String novoNome = nomeField.getText();
+                    int novaIdade = Integer.parseInt(idadeField.getText());
+                    String novaPosicao = posicaoField.getText();
+                    int novoNumeroCamisa = Integer.parseInt(numeroCamisaField.getText());
+
+                    Player editPlayer = new Player(matricula, novoNome, novaIdade, novaPosicao, novoNumeroCamisa);
+
+                    String tableName = null;
+
+                    if (titularesTable == selectedTable) {
+                        tableName = "titulares";
+                    } else if (reservasTable == selectedTable) {
+                        tableName = "reservas";
+                    } else if (underSeventeenTable == selectedTable) {
+                        tableName = "sub17";
+                    }
+
+                    if (tableName != null) {
+                        editPlayerInDb(editPlayer, tableName);
+                        selectedTableModel.setValueAt(novoNome, selectedRow, 1);
+                        selectedTableModel.setValueAt(novaIdade, selectedRow, 2);
+                        selectedTableModel.setValueAt(novaPosicao, selectedRow, 3);
+                        selectedTableModel.setValueAt(novoNumeroCamisa, selectedRow, 4);
+                        JOptionPane.showMessageDialog(this, "Jogador editado com sucesso");
+                    } else {
+                        JOptionPane.showMessageDialog(this, "Erro ao selecionar jogador para editar");
+                    }
+
+                }
             } else {
-                JOptionPane.showMessageDialog(this, "Selecione um Jogador para editar");
+                JOptionPane.showMessageDialog(this, "Selecione um jogador para editar");
             }
+        } else {
+            JOptionPane.showMessageDialog(this, "Nenhum Jogador foi selecionado");
         }
 
     }
 
-    private JTable getSelectedTable(int[] selectedRow, JTable... tables) {
-        for (int i = 0; i < tables.length; i++) {
-            if (selectedRow[i] != -1) {
-                return tables[i];
-            }
+    private void editPlayerInDb(Player player, String tableName) {
+        String editQuery = "UPDATE " + tableName + " SET nome = ?, idade = ?, posicao = ?, numero_camisa = ? WHERE matricula = ?";
+        try (Connection connection = DatabaseConnector.getConnection(); PreparedStatement preparedStatement = connection.prepareStatement(editQuery)){
+            preparedStatement.setString(1, player.getNome());
+            preparedStatement.setInt(2, player.getIdade());
+            preparedStatement.setString(3, player.getPosicao());
+            preparedStatement.setInt(4, player.getNumeroCamisa());
+            preparedStatement.setInt(5, player.getMatricula());
+            preparedStatement.executeUpdate();
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
         }
-        return null;
-    }
-
-    private DefaultTableModel getTableModel(JTable table) {
-        if (table == titularesTable) {
-            return titularesModel;
-        } else if (table == reservasTable) {
-            return reservasModel;
-        } else if (table == underSeventeenTable) {
-            return underSeventeenModel;
-        }
-        return null;
-    }
-
-    private void editInfoPlayersSelector(int selectedRow, JTable table, DefaultTableModel model) {
-        String nomeJogador;
-        int idadeJogador;
-        String posicaoJogador;
-
-        nomeJogador = JOptionPane.showInputDialog(this, "Edite o nome do jogador:", table.getValueAt(selectedRow, 0));
-        idadeJogador = Integer.parseInt(JOptionPane.showInputDialog(this, "Edite a idade do jogador:", table.getValueAt(selectedRow, 1)));
-        posicaoJogador = JOptionPane.showInputDialog(this, "Edite a posição do jogador:", table.getValueAt(selectedRow, 2));
-
-        model.setValueAt(nomeJogador, selectedRow, 0);
-        model.setValueAt(idadeJogador, selectedRow, 1);
-        model.setValueAt(posicaoJogador, selectedRow, 2);
     }
 
     private int contarJogadoresMais17AnosNaTabelaSub17() {
