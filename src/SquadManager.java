@@ -118,10 +118,12 @@ public class SquadManager extends JFrame {
             model.setRowCount(0);
 
             while (resultSet.next()) {
+                int matricula = resultSet.getInt("matricula");
                 String nome = resultSet.getString("nome");
                 int idade = resultSet.getInt("idade");
                 String posicao = resultSet.getString("posicao");
-                model.addRow(new Object[]{nome, idade, posicao});
+                int numeroCamisa = resultSet.getInt("numero_camisa");
+                model.addRow(new Object[]{matricula, nome, idade, posicao, numeroCamisa});
             }
         } catch (SQLException e) {
             throw new RuntimeException(e);
@@ -160,12 +162,13 @@ public class SquadManager extends JFrame {
             Player newPlayer = playerData();
             if (newPlayer != null && targetModel != null && tableName != null) {
                 insertPlayerIntoDatabase(newPlayer, tableName);
-                targetModel.addRow(new Object[] {newPlayer.getNome(), newPlayer.getIdade(), newPlayer.getPosicao()});
+                targetModel.addRow(new Object[] {newPlayer.getMatricula(), newPlayer.getNome(), newPlayer.getIdade(), newPlayer.getPosicao(), newPlayer.getNumeroCamisa()});
             }
         }
     }
 
     private Player playerData() {
+        int matricula = Integer.parseInt(JOptionPane.showInputDialog(this, "Insira a matricula do jogador"));
         String nomeJogador = JOptionPane.showInputDialog(this, "Qual o nome do jogador");
         String idadeJogadorStr = JOptionPane.showInputDialog(this, "Qual a idade do jogador");
         int idadeJogador;
@@ -176,18 +179,21 @@ public class SquadManager extends JFrame {
             return null;
         }
         String posicaoJogador = JOptionPane.showInputDialog(this, "Qual a posicao do jogador");
+        int numeroCamisa = Integer.parseInt(JOptionPane.showInputDialog(this, "Qual a numero de camisa do jogador"));
 
-        return new Player(nomeJogador, idadeJogador, posicaoJogador);
+        return new Player(matricula, nomeJogador, idadeJogador, posicaoJogador, numeroCamisa);
     }
 
     private void insertPlayerIntoDatabase(Player player, String tableName) {
         ensureTableExists(tableName);
-        String sql = "INSERT INTO " + tableName + " (nome, idade, posicao) VALUES (?,?,?)";
+        String sql = "INSERT INTO " + tableName + " (matricula, nome, idade, posicao, numero_camisa) VALUES (?,?,?,?,?)";
         try (Connection connection = DatabaseConnector.getConnection();
              PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
-            preparedStatement.setString(1, player.getNome());
-            preparedStatement.setInt(2, player.getIdade());
-            preparedStatement.setString(3, player.getPosicao());
+            preparedStatement.setInt(1, player.getMatricula());
+            preparedStatement.setString(2, player.getNome());
+            preparedStatement.setInt(3, player.getIdade());
+            preparedStatement.setString(4, player.getPosicao());
+            preparedStatement.setInt(5, player.getNumeroCamisa());
             preparedStatement.executeUpdate();
             JOptionPane.showMessageDialog(this, "Jogador inserido com sucesso");
         } catch (SQLException e) {
@@ -198,9 +204,11 @@ public class SquadManager extends JFrame {
     private void ensureTableExists(String tableName) {
         String CreateTableSql = "CREATE TABLE IF NOT EXISTS " + tableName +
                 " (id SERIAL PRIMARY KEY, " +
+                "matricula INT, " +
                 "nome VARCHAR(255) NOT NULL, " +
                 "idade INT, " +
-                "posicao VARCHAR(255) NOT NULL" +
+                "posicao VARCHAR(255) NOT NULL, " +
+                "numero_camisa INT" +
                 ")";
         try (Connection connection = DatabaseConnector.getConnection();
              Statement statement = connection.createStatement()) {
@@ -260,15 +268,17 @@ public class SquadManager extends JFrame {
                 if (targetModel != null && targetTable != selectedTable) {
                     int selectRow = selectedTable.getSelectedRow();
 
-                    String nomeJogador = String.valueOf(selectedTableModel.getValueAt(selectRow, 0));
-                    int idadeJogador = Integer.parseInt(String.valueOf(selectedTableModel.getValueAt(selectRow, 1)));
-                    String posicaoJogador = String.valueOf(selectedTableModel.getValueAt(selectRow, 2));
+                    int matricula = Integer.parseInt(String.valueOf(targetModel.getValueAt(selectRow, 0)));
+                    String nomeJogador = String.valueOf(selectedTableModel.getValueAt(selectRow, 1));
+                    int idadeJogador = Integer.parseInt(String.valueOf(selectedTableModel.getValueAt(selectRow, 2)));
+                    String posicaoJogador = String.valueOf(selectedTableModel.getValueAt(selectRow, 3));
+                    int numeroCamisa = Integer.parseInt(String.valueOf(selectedTableModel.getValueAt(selectRow, 4)));
 
                     if (targetTable == underSeventeenTable && idadeJogador > 17 && contarJogadoresMais17AnosNaTabelaSub17() >= 3) {
                         JOptionPane.showMessageDialog(this, "Só pode ter 3 jogadores com mais de 17 anos no sub-17");
                     } else {
-                        movePlayerToAnotherDbTable(new Player(nomeJogador, idadeJogador, posicaoJogador), sourceTable, targerTableName);
-                        targetModel.addRow(new Object[]{nomeJogador, idadeJogador, posicaoJogador});
+                        movePlayerToAnotherDbTable(new Player(matricula,nomeJogador, idadeJogador, posicaoJogador, numeroCamisa), sourceTable, targerTableName);
+                        targetModel.addRow(new Object[]{matricula, nomeJogador, idadeJogador, posicaoJogador, numeroCamisa});
                         selectedTableModel.removeRow(selectRow);
                     }
                 } else {
@@ -303,9 +313,11 @@ public class SquadManager extends JFrame {
         if (selectedTable != null && selectedTableModel != null) {
             int selectedRow = selectedTable.getSelectedRow();
             if (selectedRow != -1) {
-                String nomeJogador = String.valueOf(selectedTableModel.getValueAt(selectedRow, 0));
-                int idadeJogador = Integer.parseInt(String.valueOf(selectedTableModel.getValueAt(selectedRow, 1)));
-                String posicaoJogador = String.valueOf(selectedTableModel.getValueAt(selectedRow, 2));
+                int matricula = Integer.parseInt(String.valueOf(selectedTableModel.getValueAt(selectedRow, 0)));
+                String nomeJogador = String.valueOf(selectedTableModel.getValueAt(selectedRow, 1));
+                int idadeJogador = Integer.parseInt(String.valueOf(selectedTableModel.getValueAt(selectedRow, 2)));
+                String posicaoJogador = String.valueOf(selectedTableModel.getValueAt(selectedRow, 3));
+                int numeroCamisa = Integer.parseInt(String.valueOf(selectedTableModel.getValueAt(selectedRow, 4)));
 
                 String tableName = null;
 
@@ -318,7 +330,7 @@ public class SquadManager extends JFrame {
                 }
 
                 if (tableName != null) {
-                    deletePlayerFromDbTable(new Player(nomeJogador, idadeJogador, posicaoJogador), tableName);
+                    deletePlayerFromDbTable(new Player(matricula, nomeJogador, idadeJogador, posicaoJogador, numeroCamisa), tableName);
                     selectedTableModel.removeRow(selectedRow);
                     JOptionPane.showMessageDialog(this,"Jogador removido com sucesso");
                 } else {

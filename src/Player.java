@@ -6,12 +6,12 @@ public class Player {
     private int numeroCamisa;
     private String time;
 
-    public Player(String nome, int idade, String posicao) {
-        this.matricula = 0;
+    public Player(int matricula, String nome, int idade, String posicao, int numeroCamisa) {
+        this.matricula = matricula;
         this.nome = nome;
         this.idade = idade;
         this.posicao = posicao;
-        this.numeroCamisa = 0;
+        this.numeroCamisa = numeroCamisa;
         time = null;
     }
 
