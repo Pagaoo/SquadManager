@@ -161,8 +161,10 @@ public class SquadManager extends JFrame {
 
             Player newPlayer = playerData();
             if (newPlayer != null && targetModel != null && tableName != null) {
-                insertPlayerIntoDatabase(newPlayer, tableName);
-                targetModel.addRow(new Object[] {newPlayer.getMatricula(), newPlayer.getNome(), newPlayer.getIdade(), newPlayer.getPosicao(), newPlayer.getNumeroCamisa()});
+                boolean isInserted = insertPlayerIntoDatabase(newPlayer, tableName);
+                if (isInserted) {
+                    targetModel.addRow(new Object[] {newPlayer.getMatricula(), newPlayer.getNome(), newPlayer.getIdade(), newPlayer.getPosicao(), newPlayer.getNumeroCamisa()});
+                }
             }
         }
     }
@@ -184,7 +186,7 @@ public class SquadManager extends JFrame {
         return new Player(matricula, nomeJogador, idadeJogador, posicaoJogador, numeroCamisa);
     }
 
-    private void insertPlayerIntoDatabase(Player player, String tableName) {
+    private boolean insertPlayerIntoDatabase(Player player, String tableName) {
         ensureTableExists(tableName);
         String sql = "INSERT INTO " + tableName + " (matricula, nome, idade, posicao, numero_camisa) VALUES (?,?,?,?,?)";
         try (Connection connection = DatabaseConnector.getConnection();
@@ -196,19 +198,31 @@ public class SquadManager extends JFrame {
             preparedStatement.setInt(5, player.getNumeroCamisa());
             preparedStatement.executeUpdate();
             JOptionPane.showMessageDialog(this, "Jogador inserido com sucesso");
+            return true;
         } catch (SQLException e) {
-            JOptionPane.showMessageDialog(this, "Erro ao inserir o jogador " + e.getMessage());
+            //código para violação de UNIQUE no postgres
+            if (e.getSQLState().equals("23505")) {
+                String errorMessage = e.getMessage().toLowerCase();
+                if (errorMessage.contains("matricula")) {
+                    JOptionPane.showMessageDialog(this, "Matricula " + player.getMatricula() + " já existe!");
+                } else {
+                    JOptionPane.showMessageDialog(this, "Número de camisa " + player.getNumeroCamisa() + " já está atribuido a um jogador!");
+                }
+            } else {
+                JOptionPane.showMessageDialog(this, "Erro ao inserir o jogador " + e.getMessage());
+            }
         }
+        return false;
     }
 
     private void ensureTableExists(String tableName) {
         String CreateTableSql = "CREATE TABLE IF NOT EXISTS " + tableName +
                 " (id SERIAL PRIMARY KEY, " +
-                "matricula INT, " +
+                "matricula INT UNIQUE, " +
                 "nome VARCHAR(255) NOT NULL, " +
                 "idade INT, " +
                 "posicao VARCHAR(255) NOT NULL, " +
-                "numero_camisa INT" +
+                "numero_camisa INT UNIQUE" +
                 ")";
         try (Connection connection = DatabaseConnector.getConnection();
              Statement statement = connection.createStatement()) {
