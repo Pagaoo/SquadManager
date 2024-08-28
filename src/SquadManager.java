@@ -359,11 +359,13 @@ public class SquadManager extends JFrame {
     }
 
     private void deletePlayerFromDbTable(Player player, String tableName) {
-        String deleteQuery = "DELETE FROM " + tableName + " WHERE nome = ? AND idade = ? AND posicao = ?";
+        String deleteQuery = "DELETE FROM " + tableName + " WHERE matricula = ?";
         try (Connection connection = DatabaseConnector.getConnection(); PreparedStatement preparedStatement = connection.prepareStatement(deleteQuery) ){
-            preparedStatement.setString(1, player.getNome());
-            preparedStatement.setInt(2, player.getIdade());
-            preparedStatement.setString(3, player.getPosicao());
+            preparedStatement.setInt(1, player.getMatricula());
+            preparedStatement.setString(2, player.getNome());
+            preparedStatement.setInt(3, player.getIdade());
+            preparedStatement.setString(4, player.getPosicao());
+            preparedStatement.setInt(5, player.getNumeroCamisa());
             preparedStatement.executeUpdate();
         } catch (SQLException e) {
             throw new RuntimeException(e);
