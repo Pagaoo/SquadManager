@@ -136,6 +136,99 @@ public class SquadManager extends JFrame {
         underSeventeenTable.getSelectionModel().addListSelectionListener(new TableSelectionListener(underSeventeenTable));
     }
 
+    private class TableSelectionListener implements ListSelectionListener {
+        private JTable currentTable;
+
+        public TableSelectionListener(JTable table) {
+            this.currentTable = table;
+        }
+
+        @Override
+        public void valueChanged(ListSelectionEvent e) {
+            if (e.getValueIsAdjusting()) return;
+
+            ListSelectionModel selectionModel = (ListSelectionModel) e.getSource();
+
+            if (!selectionModel.isSelectionEmpty()) {
+                if (currentTable == titularesTable) {
+                    reservasTable.getSelectionModel().clearSelection();
+                    underSeventeenTable.getSelectionModel().clearSelection();
+                }
+                if (currentTable == reservasTable) {
+                    titularesTable.getSelectionModel().clearSelection();
+                    underSeventeenTable.getSelectionModel().clearSelection();
+                }
+                if (currentTable == underSeventeenTable) {
+                    titularesTable.getSelectionModel().clearSelection();
+                    reservasTable.getSelectionModel().clearSelection();
+                }
+
+            }
+        }
+    }
+
+    private void ensureTableExists(String tableName) {
+        String CreateTableSql = "CREATE TABLE IF NOT EXISTS " + tableName +
+                " (id SERIAL PRIMARY KEY, " +
+                "matricula INT UNIQUE, " +
+                "nome VARCHAR(255) NOT NULL, " +
+                "idade INT, " +
+                "posicao VARCHAR(255) NOT NULL, " +
+                "numero_camisa INT UNIQUE" +
+                ")";
+        try (Connection connection = DatabaseConnector.getConnection();
+             Statement statement = connection.createStatement()) {
+            statement.executeUpdate(CreateTableSql);
+        } catch (SQLException e) {
+            JOptionPane.showMessageDialog(this, "Erro ao criar tabela na base de dados " + e.getMessage());
+        }
+    }
+
+    private static Player getPlayerData(DefaultTableModel tableModel, int selectedRow) {
+        int matricula = Integer.parseInt(String.valueOf(tableModel.getValueAt(selectedRow, 0)));
+        String nomeJogador = String.valueOf(tableModel.getValueAt(selectedRow, 1));
+        int idadeJogador = Integer.parseInt(String.valueOf(tableModel.getValueAt(selectedRow, 2)));
+        String posicaoJogador = String.valueOf(tableModel.getValueAt(selectedRow, 3));
+        int numeroCamisa = Integer.parseInt(String.valueOf(tableModel.getValueAt(selectedRow, 4)));
+
+
+        return new Player(matricula, nomeJogador, idadeJogador, posicaoJogador, numeroCamisa);
+    }
+
+    private record TableSelection(JTable table, DefaultTableModel model) {
+    }
+
+    private static TableSelection getSelectedTable(JTable titularesTable, DefaultTableModel titularesModel,
+                                                   JTable reservasTable, DefaultTableModel reservasModel,
+                                                   JTable underSeventeenTable, DefaultTableModel underSeventeenModel) {
+
+        if (titularesTable.getSelectedRow() != -1) {
+            return new TableSelection(titularesTable, titularesModel);
+        } else if (reservasTable.getSelectedRow() != -1) {
+            return new TableSelection(reservasTable, reservasModel);
+        } else if (underSeventeenTable.getSelectedRow() != -1) {
+            return new TableSelection(underSeventeenTable, underSeventeenModel);
+        }
+        return null;
+    }
+
+    private Player playerData() {
+        int matricula = Integer.parseInt(JOptionPane.showInputDialog(this, "Insira a matricula do jogador"));
+        String nomeJogador = JOptionPane.showInputDialog(this, "Qual o nome do jogador");
+        String idadeJogadorStr = JOptionPane.showInputDialog(this, "Qual a idade do jogador");
+        int idadeJogador;
+        try {
+            idadeJogador = Integer.parseInt(idadeJogadorStr);
+        } catch (NumberFormatException e) {
+            JOptionPane.showMessageDialog(this, "A idade do jogador deve estar em formato númerico");
+            return null;
+        }
+        String posicaoJogador = JOptionPane.showInputDialog(this, "Qual a posicao do jogador");
+        int numeroCamisa = Integer.parseInt(JOptionPane.showInputDialog(this, "Qual a numero de camisa do jogador"));
+
+        return new Player(matricula, nomeJogador, idadeJogador, posicaoJogador, numeroCamisa);
+    }
+
     private void addPlayer() {
         String[] options = {"Titulares", "Reservas", "Sub-17"};
         JComboBox<String> selectOption = new JComboBox<>(options);
@@ -169,23 +262,6 @@ public class SquadManager extends JFrame {
         }
     }
 
-    private Player playerData() {
-        int matricula = Integer.parseInt(JOptionPane.showInputDialog(this, "Insira a matricula do jogador"));
-        String nomeJogador = JOptionPane.showInputDialog(this, "Qual o nome do jogador");
-        String idadeJogadorStr = JOptionPane.showInputDialog(this, "Qual a idade do jogador");
-        int idadeJogador;
-        try {
-            idadeJogador = Integer.parseInt(idadeJogadorStr);
-        } catch (NumberFormatException e) {
-            JOptionPane.showMessageDialog(this, "A idade do jogador deve estar em formato númerico");
-            return null;
-        }
-        String posicaoJogador = JOptionPane.showInputDialog(this, "Qual a posicao do jogador");
-        int numeroCamisa = Integer.parseInt(JOptionPane.showInputDialog(this, "Qual a numero de camisa do jogador"));
-
-        return new Player(matricula, nomeJogador, idadeJogador, posicaoJogador, numeroCamisa);
-    }
-
     private boolean insertPlayerIntoDatabase(Player player, String tableName) {
         ensureTableExists(tableName);
         String sql = "INSERT INTO " + tableName + " (matricula, nome, idade, posicao, numero_camisa) VALUES (?,?,?,?,?)";
@@ -213,23 +289,6 @@ public class SquadManager extends JFrame {
             }
         }
         return false;
-    }
-
-    private void ensureTableExists(String tableName) {
-        String CreateTableSql = "CREATE TABLE IF NOT EXISTS " + tableName +
-                " (id SERIAL PRIMARY KEY, " +
-                "matricula INT UNIQUE, " +
-                "nome VARCHAR(255) NOT NULL, " +
-                "idade INT, " +
-                "posicao VARCHAR(255) NOT NULL, " +
-                "numero_camisa INT UNIQUE" +
-                ")";
-        try (Connection connection = DatabaseConnector.getConnection();
-             Statement statement = connection.createStatement()) {
-            statement.executeUpdate(CreateTableSql);
-        } catch (SQLException e) {
-            JOptionPane.showMessageDialog(this, "Erro ao criar tabela na base de dados " + e.getMessage());
-        }
     }
 
     private void movePlayers() {
@@ -296,39 +355,10 @@ public class SquadManager extends JFrame {
         }
     }
 
-    private static Player getPlayerData(DefaultTableModel tableModel, int selectedRow) {
-        int matricula = Integer.parseInt(String.valueOf(tableModel.getValueAt(selectedRow, 0)));
-        String nomeJogador = String.valueOf(tableModel.getValueAt(selectedRow, 1));
-        int idadeJogador = Integer.parseInt(String.valueOf(tableModel.getValueAt(selectedRow, 2)));
-        String posicaoJogador = String.valueOf(tableModel.getValueAt(selectedRow, 3));
-        int numeroCamisa = Integer.parseInt(String.valueOf(tableModel.getValueAt(selectedRow, 4)));
-
-
-        return new Player(matricula, nomeJogador, idadeJogador, posicaoJogador, numeroCamisa);
-    }
-
     private void movePlayerToAnotherDbTable(Player player, String sourceTable, String targetTable) {
         insertPlayerIntoDatabase(player, targetTable);
         deletePlayerFromDbTable(player, sourceTable);
     }
-
-    private record TableSelection(JTable table, DefaultTableModel model) {
-    }
-
-    private static TableSelection getSelectedTable(JTable titularesTable, DefaultTableModel titularesModel,
-                                                   JTable reservasTable, DefaultTableModel reservasModel,
-                                                   JTable underSeventeenTable, DefaultTableModel underSeventeenModel) {
-
-        if (titularesTable.getSelectedRow() != -1) {
-            return new TableSelection(titularesTable, titularesModel);
-        } else if (reservasTable.getSelectedRow() != -1) {
-            return new TableSelection(reservasTable, reservasModel);
-        } else if (underSeventeenTable.getSelectedRow() != -1) {
-            return new TableSelection(underSeventeenTable, underSeventeenModel);
-        }
-        return null;
-    }
-
 
     private void deletePlayer() {
        TableSelection selectedPanel = getSelectedTable(titularesTable, titularesModel, reservasTable, reservasModel,
@@ -465,37 +495,6 @@ public class SquadManager extends JFrame {
             }
         }
         return count;
-    }
-
-    private class TableSelectionListener implements ListSelectionListener {
-        private JTable currentTable;
-
-        public TableSelectionListener(JTable table) {
-            this.currentTable = table;
-        }
-
-        @Override
-        public void valueChanged(ListSelectionEvent e) {
-            if (e.getValueIsAdjusting()) return;
-
-            ListSelectionModel selectionModel = (ListSelectionModel) e.getSource();
-
-            if (!selectionModel.isSelectionEmpty()) {
-                if (currentTable == titularesTable) {
-                    reservasTable.getSelectionModel().clearSelection();
-                    underSeventeenTable.getSelectionModel().clearSelection();
-                }
-                if (currentTable == reservasTable) {
-                    titularesTable.getSelectionModel().clearSelection();
-                    underSeventeenTable.getSelectionModel().clearSelection();
-                }
-                if (currentTable == underSeventeenTable) {
-                    titularesTable.getSelectionModel().clearSelection();
-                    reservasTable.getSelectionModel().clearSelection();
-                }
-
-            }
-        }
     }
 
     public static void main(String[] args) {
