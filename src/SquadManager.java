@@ -233,21 +233,18 @@ public class SquadManager extends JFrame {
     }
 
     private void movePlayers() {
-        JTable selectedTable = null;
-        DefaultTableModel selectedTableModel = null;
+        TableSelection selectedPanel = getSelectedTable(titularesTable, titularesModel, reservasTable, reservasModel,
+                underSeventeenTable, underSeventeenModel);
         String sourceTable = null;
 
-        if (titularesTable.getSelectedRow() != -1) {
-            selectedTable = titularesTable;
-            selectedTableModel = titularesModel;
+        JTable selectedTable = selectedPanel.table;
+        DefaultTableModel selectedTableModel = selectedPanel.model;
+
+        if (selectedTable == titularesTable) {
             sourceTable = "titulares";
-        } else if (reservasTable.getSelectedRow() != -1) {
-            selectedTable = reservasTable;
-            selectedTableModel = reservasModel;
+        } else if (selectedTable == reservasTable) {
             sourceTable = "reservas";
-        } else if (underSeventeenTable.getSelectedRow() != -1) {
-            selectedTable = underSeventeenTable;
-            selectedTableModel = underSeventeenModel;
+        } else if (selectedTable == underSeventeenTable) {
             sourceTable = "sub17";
         }
 
@@ -280,20 +277,20 @@ public class SquadManager extends JFrame {
                 }
 
                 if (targetModel != null && targetTable != selectedTable) {
-                    int selectRow = selectedTable.getSelectedRow();
+                    int selectedRow = selectedTable.getSelectedRow();
 
-                    int matricula = Integer.parseInt(String.valueOf(selectedTableModel.getValueAt(selectRow, 0)));
-                    String nomeJogador = String.valueOf(selectedTableModel.getValueAt(selectRow, 1));
-                    int idadeJogador = Integer.parseInt(String.valueOf(selectedTableModel.getValueAt(selectRow, 2)));
-                    String posicaoJogador = String.valueOf(selectedTableModel.getValueAt(selectRow, 3));
-                    int numeroCamisa = Integer.parseInt(String.valueOf(selectedTableModel.getValueAt(selectRow, 4)));
+                    int matricula = Integer.parseInt(String.valueOf(selectedTableModel.getValueAt(selectedRow, 0)));
+                    String nomeJogador = String.valueOf(selectedTableModel.getValueAt(selectedRow, 1));
+                    int idadeJogador = Integer.parseInt(String.valueOf(selectedTableModel.getValueAt(selectedRow, 2)));
+                    String posicaoJogador = String.valueOf(selectedTableModel.getValueAt(selectedRow, 3));
+                    int numeroCamisa = Integer.parseInt(String.valueOf(selectedTableModel.getValueAt(selectedRow, 4)));
 
                     if (targetTable == underSeventeenTable && idadeJogador > 17 && contarJogadoresMais17AnosNaTabelaSub17() >= 3) {
                         JOptionPane.showMessageDialog(this, "Só pode ter 3 jogadores com mais de 17 anos no sub-17");
                     } else {
                         movePlayerToAnotherDbTable(new Player(matricula,nomeJogador, idadeJogador, posicaoJogador, numeroCamisa), sourceTable, targertTableName);
                         targetModel.addRow(new Object[]{matricula, nomeJogador, idadeJogador, posicaoJogador, numeroCamisa});
-                        selectedTableModel.removeRow(selectRow);
+                        selectedTableModel.removeRow(selectedRow);
                     }
                 } else {
                     JOptionPane.showMessageDialog(this,"Escolha inválida, jogador já está nesse squad");
@@ -309,22 +306,38 @@ public class SquadManager extends JFrame {
         deletePlayerFromDbTable(player, sourceTable);
     }
 
-    private void deletePlayer() {
-        JTable selectedTable = null;
-        DefaultTableModel selectedTableModel = null;
+    private static class TableSelection {
+        public final JTable table;
+        public final DefaultTableModel model;
+
+        public TableSelection(JTable table, DefaultTableModel model) {
+            this.table = table;
+            this.model = model;
+        }
+    }
+
+    private static TableSelection getSelectedTable(JTable titularesTable, DefaultTableModel titularesModel,
+                                                   JTable reservasTable, DefaultTableModel reservasModel,
+                                                   JTable underSeventeenTable, DefaultTableModel underSeventeenModel) {
 
         if (titularesTable.getSelectedRow() != -1) {
-            selectedTable = titularesTable;
-            selectedTableModel = titularesModel;
+            return new TableSelection(titularesTable, titularesModel);
         } else if (reservasTable.getSelectedRow() != -1) {
-            selectedTable = reservasTable;
-            selectedTableModel = reservasModel;
+            return new TableSelection(reservasTable, reservasModel);
         } else if (underSeventeenTable.getSelectedRow() != -1) {
-            selectedTable = underSeventeenTable;
-            selectedTableModel = underSeventeenModel;
+            return new TableSelection(underSeventeenTable, underSeventeenModel);
         }
+        return null;
+    }
 
-        if (selectedTable != null && selectedTableModel != null) {
+
+    private void deletePlayer() {
+       TableSelection selectedPanel = getSelectedTable(titularesTable, titularesModel, reservasTable, reservasModel,
+               underSeventeenTable, underSeventeenModel);
+
+        if (selectedPanel != null) {
+            JTable selectedTable = selectedPanel.table;
+            DefaultTableModel selectedTableModel = selectedPanel.model;
             int selectedRow = selectedTable.getSelectedRow();
             if (selectedRow != -1) {
                 int matricula = Integer.parseInt(String.valueOf(selectedTableModel.getValueAt(selectedRow, 0)));
@@ -369,21 +382,12 @@ public class SquadManager extends JFrame {
     }
 
     private void editPlayer() {
-        JTable selectedTable = null;
-        DefaultTableModel selectedTableModel = null;
+        TableSelection selectedPanel = getSelectedTable(titularesTable, titularesModel, reservasTable, reservasModel,
+                underSeventeenTable, underSeventeenModel);
 
-        if (titularesTable.getSelectedRow() != -1) {
-            selectedTable = titularesTable;
-            selectedTableModel = titularesModel;
-        } else if (reservasTable.getSelectedRow() != -1) {
-            selectedTable = reservasTable;
-            selectedTableModel = reservasModel;
-        } else if (underSeventeenTable.getSelectedRow() != -1) {
-            selectedTable = underSeventeenTable;
-            selectedTableModel = underSeventeenModel;
-        }
-
-        if (selectedTable != null && selectedTableModel != null) {
+        if (selectedPanel != null) {
+            JTable selectedTable = selectedPanel.table;
+            DefaultTableModel selectedTableModel = selectedPanel.model;
             int selectedRow = selectedTable.getSelectedRow();
             if (selectedRow != -1) {
                 int matricula = Integer.parseInt(String.valueOf(selectedTableModel.getValueAt(selectedRow, 0)));
