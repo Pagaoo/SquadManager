@@ -312,14 +312,7 @@ public class SquadManager extends JFrame {
         deletePlayerFromDbTable(player, sourceTable);
     }
 
-    private static class TableSelection {
-        public final JTable table;
-        public final DefaultTableModel model;
-
-        public TableSelection(JTable table, DefaultTableModel model) {
-            this.table = table;
-            this.model = model;
-        }
+    private record TableSelection(JTable table, DefaultTableModel model) {
     }
 
     private static TableSelection getSelectedTable(JTable titularesTable, DefaultTableModel titularesModel,
